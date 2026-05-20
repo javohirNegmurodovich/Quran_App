@@ -147,10 +147,10 @@ const SettingsPanel = memo(function SettingsPanel({
       <div className="mb-4 flex items-start justify-between gap-4 border-b border-[#d4af37]/20 pb-3">
         <div>
           <h3 className="text-[#0f3b25] font-serif text-xl font-bold">
-            Ovoz va tafsir
+            Audio and Tafsir
           </h3>
           <p className="text-xs text-[#0f3b25]/60">
-            Qori va tafsir manbasini tanlang
+            Choose your reciter and tafsir source
           </p>
         </div>
         <button
@@ -164,7 +164,7 @@ const SettingsPanel = memo(function SettingsPanel({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label className="flex flex-col gap-2 text-[#0f3b25] font-bold text-sm">
-          <span>Qori tanlang</span>
+          <span> Choose reciter</span>
           <select
             value={recitationId}
             onChange={(e) => onReciterChange(e.target.value)}
@@ -180,7 +180,7 @@ const SettingsPanel = memo(function SettingsPanel({
         </label>
 
         <label className="flex flex-col gap-2 text-[#0f3b25] font-bold text-sm">
-          <span>Tafsir tanlang</span>
+          <span> Choose tafsir</span>
           <select
             value={tafsirId}
             onChange={(e) => onTafsirChange(e.target.value)}
@@ -197,7 +197,7 @@ const SettingsPanel = memo(function SettingsPanel({
       </div>
 
       <div className="mt-4 rounded-2xl bg-[#0a2e1f]/5 border border-[#d4af37]/20 px-4 py-3 text-xs sm:text-sm text-[#0f3b25]/70">
-        <div className="font-bold text-[#0f3b25] mb-1">Hozirgi sozlama</div>
+        <div className="font-bold text-[#0f3b25] mb-1">Current selection</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <span className="truncate">🎙 {reciterLabel}</span>
           <span className="truncate">📖 {tafsirLabel}</span>
@@ -238,9 +238,11 @@ const AyahCard = memo(
             });
 
             if (result.success) {
-              toast.success("Quran.com bookmark saqlandi 🔖");
+              toast.success("Saved to Quran.com bookmarks🔖");
             } else {
-              toast.error(result.message || "Quran.com bookmark saqlanmadi");
+              toast.error(
+                result.message || "Could not save Quran.com bookmark",
+              );
             }
           }}
           className="mt-4 rounded-full border border-[#d4af37]/50 px-4 py-2 text-[#0f3b25] font-bold hover:bg-[#d4af37] transition-all"
@@ -349,7 +351,7 @@ const AyahCard = memo(
             {showTafsir && ayah.tafsir?.text && (
               <details className="mt-5 rounded-2xl bg-[#f2ece1]/70 border border-[#d4af37]/30 p-4">
                 <summary className="cursor-pointer font-bold text-[#0f3b25]">
-                  Tafsirni ko'rish — {ayah.tafsir?.resourceName || tafsirLabel}{" "}
+                  View tafsir — {ayah.tafsir?.resourceName || tafsirLabel}{" "}
                   {ayah.tafsir?.languageName || ""}
                 </summary>
                 <p className="mt-4 text-base text-gray-700 leading-relaxed">
@@ -408,8 +410,6 @@ export default function Surah() {
   const [surahName, setSurahName] = useState(initCache?.surahName || "");
   const [loading, setLoading] = useState(!initCache);
   const [isSrcChange, setIsSrcChange] = useState(false);
-
-  console.log(ayahs);
 
   const [reciters, setReciters] = useState(FALLBACK_RECITERS);
   const [tafsirs, setTafsirs] = useState(FALLBACK_TAFSIRS);
@@ -520,7 +520,7 @@ export default function Surah() {
   const handleToggleLearned = useCallback(() => {
     toggleLearnedSurah(suraNumber);
     if (!isLearned) {
-      toast.success("Qalbingizning bir parchasi muzdan eridi!", {
+      toast.success(" A piece of your heart has melted!", {
         duration: 3000,
         icon: "❤️",
         style: { color: "#fef2f2", background: "#7f1d1d" },
@@ -595,7 +595,7 @@ export default function Surah() {
       } catch (err) {
         if (err.name !== "AbortError") {
           console.error("Failed to load Surah:", err);
-          toast.error("Sura yuklanmadi. Qayta urinib ko'ring.");
+          toast.error("Surah not loaded. Please try again.");
         }
       } finally {
         if (requestId === requestIdRef.current) {
@@ -765,7 +765,6 @@ export default function Surah() {
     },
     [ayahs.length],
   );
-  console.log(STATIC_CHAPTERS[sura - 1]);
 
   // ─── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -794,7 +793,7 @@ export default function Surah() {
       {/* Soft source-change indicator */}
       {isSrcChange && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[500] rounded-full bg-[#0a2e1f] text-[#d4af37] px-5 py-2 text-sm font-bold shadow-xl border border-[#d4af37]/40">
-          Yangi qori/tafsir yuklanmoqda...
+          Loading new reciter / tafsir...
         </div>
       )}
 
@@ -820,7 +819,7 @@ export default function Surah() {
               }}
             >
               <span className="text-xs sm:text-sm font-bold font-mono">
-                Oyat: {sliderIndex + 1}
+                ayah: {sliderIndex + 1}
               </span>
               <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-y-4 border-y-transparent border-l-[6px] border-l-[#0a2e1f]"></div>
               <div className="absolute top-1/2 -right-1.75 -translate-y-1/2 border-y-[5px] border-y-transparent border-l-[7px] border-l-[#d4af37]/50 -z-10"></div>
@@ -895,13 +894,13 @@ export default function Surah() {
                 d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
               />
             </svg>
-            <span className="hidden sm:inline">Yurakka qaytish</span>
+            <span className="hidden sm:inline">Back to heart</span>
           </button>
 
           <h1 className="text-[#0f3b25] text-xl sm:text-4xl font-bold font-serif text-center truncate">
             {loading
-              ? "Yuklanmoqda..."
-              : `${STATIC_CHAPTERS[sura - 1]["englishName"]} surasi`}
+              ? "Loading..."
+              : `${STATIC_CHAPTERS[sura - 1]["englishName"]} `}
           </h1>
 
           <div className="relative flex justify-end">
@@ -943,7 +942,7 @@ export default function Surah() {
             <div className="flex flex-col items-center justify-center py-40">
               <div className="w-16 h-16 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
               <p className="mt-6 text-[#0f3b25] text-xl font-bold">
-                Sura o'qishga tayyorlanmoqda...
+                Preparing the Surah...
               </p>
             </div>
           ) : (
@@ -971,7 +970,8 @@ export default function Surah() {
           {!loading && (hasCompletedAudio || isLearned) && (
             <div className="mx-4 sm:mx-10 mt-12 mb-24 bg-white/90 backdrop-blur-md rounded-3xl p-8 border-2 border-[#d4af37] shadow-[0_15px_40px_rgba(212,175,55,0.2)] flex flex-col items-center text-center animate-fade-in-up">
               <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#0f3b25] mb-6">
-                Alhamdulillah, siz {surahName} surasini yakunladingiz.
+                Alhamdulillah, you learn{" "}
+                {STATIC_CHAPTERS[sura - 1]["englishName"]} surah.
               </h3>
               <label className="flex items-center gap-4 cursor-pointer group p-4 rounded-xl hover:bg-[#fdf8ed] transition-colors">
                 <input
@@ -1004,7 +1004,7 @@ export default function Surah() {
                   )}
                 </div>
                 <span className="text-xl sm:text-2xl font-medium text-[#0f3b25] select-none group-hover:text-[#d4af37] transition-colors">
-                  Ushbu surani o'rgandim
+                  I learned this Surah
                 </span>
               </label>
             </div>
@@ -1039,18 +1039,18 @@ export default function Surah() {
               type="button"
               onClick={() => setShowPlayer(false)}
               className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:bg-white/10 transition-colors"
-              title="Pleyerni yashirish"
+              title="Hide Pleyer"
             >
               ✕
             </button>
             <div>
               <span className="text-xs text-gray-400 block uppercase tracking-wider">
-                Hozir o'qilmoqda
+                Now playing
               </span>
               <span className="text-lg font-bold text-[#d4af37]">
                 {currentPlayingIndex !== null
-                  ? `${ayahs[currentPlayingIndex]?.number} - oyat`
-                  : "Tayyor"}
+                  ? `${ayahs[currentPlayingIndex]?.number} - ayah`
+                  : "Done"}
               </span>
             </div>
           </div>

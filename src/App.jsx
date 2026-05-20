@@ -4,23 +4,13 @@ import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import Heart from "./pages/Heart";
 import UserMenu from "./components/UserMenu";
-import SupportModal from "./components/SupportModal";
+
 import AboutModal from "./components/AboutModal";
 import Surah from "./pages/Surah";
 import AppearanceModal from "./components/Appearance";
 import QuranOAuthFeedback from "./components/QuranOAuthFeedback";
 import { useStore, useSettingsStore } from "./zustand/store";
 export default function App() {
-  const loadQuranSession = useStore((state) => state.loadQuranSession);
-  const isSupportModalOpen = useSettingsStore(
-    (state) => state.isSupportModalOpen,
-  );
-  const closeSupportModal = useSettingsStore(
-    (state) => state.closeSupportModal,
-  );
-  useEffect(() => {
-    loadQuranSession();
-  }, [loadQuranSession]);
   return (
     <>
       <Toaster
@@ -46,7 +36,7 @@ export default function App() {
       <Analytics />
       <AppearanceModal />
       <AboutModal />
-      <SupportModal isOpen={isSupportModalOpen} onClose={closeSupportModal} />
+      {/* <SupportModal isOpen={isSupportModalOpen} onClose={closeSupportModal} /> */}
     </>
   );
 }

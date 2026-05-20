@@ -363,9 +363,16 @@ export default function Model({
                 {isAlive ? (
                   <primitive object={materials.Heart_Tex} attach="material" />
                 ) : (
-                  <primitive
-                    object={isSearched ? searchedMaterial : frozenMaterial}
+                  /* If frozen, force R3F to attach the icy physical material */
+                  <meshPhysicalMaterial
                     attach="material"
+                    color={isSearched ? "#ffd700" : "#e0f2fe"}
+                    emissive={isSearched ? "#7a5c00" : "#0284c7"}
+                    emissiveIntensity={isSearched ? 0.8 : 0.4}
+                    roughness={0.2}
+                    metalness={0.8}
+                    clearcoat={1.0}
+                    clearcoatRoughness={0.1}
                   />
                 )}
 
