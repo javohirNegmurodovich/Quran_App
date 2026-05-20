@@ -1,5 +1,69 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "devCommand": "vite --host 0.0.0.0 --port $PORT"
+  "devCommand": "vite --host 0.0.0.0 --port $PORT",
+  "rewrites": [
+    {
+      "source": "/api/qf/chapters",
+      "destination": "/api/qf?route=chapters"
+    },
+    {
+      "source": "/api/qf/resources",
+      "destination": "/api/qf?route=resources"
+    },
+    {
+      "source": "/api/qf/surah",
+      "destination": "/api/qf?route=surah"
+    },
+
+    {
+      "source": "/api/qf-auth/login",
+      "destination": "/api/qf-auth?route=login"
+    },
+    {
+      "source": "/api/qf-auth/callback",
+      "destination": "/api/qf-auth?route=callback"
+    },
+    {
+      "source": "/api/qf-auth/status",
+      "destination": "/api/qf-auth?route=status"
+    },
+    {
+      "source": "/api/qf-auth/logout",
+      "destination": "/api/qf-auth?route=logout"
+    },
+
+    {
+      "source": "/api/qf-user/profile",
+      "destination": "/api/qf-user?route=profile"
+    },
+    {
+      "source": "/api/qf-user/bookmarks",
+      "destination": "/api/qf-user?route=bookmarks"
+    },
+    {
+      "source": "/api/qf-user/add-bookmark",
+      "destination": "/api/qf-user?route=add-bookmark"
+    },
+    {
+      "source": "/api/qf-user/learned-surahs",
+      "destination": "/api/qf-user?route=learned-surahs"
+    },
+    {
+      "source": "/api/qf-user/reading-sessions",
+      "destination": "/api/qf-user?route=reading-sessions"
+    },
+    {
+      "source": "/api/qf-user/activity-day",
+      "destination": "/api/qf-user?route=activity-day"
+    },
+    {
+      "source": "/api/qf-user/streaks",
+      "destination": "/api/qf-user?route=streaks"
+    },
+    {
+      "source": "/api/qf-user/goals",
+      "destination": "/api/qf-user?route=goals"
+    }
+  ]
 }

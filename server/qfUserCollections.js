@@ -1,18 +1,19 @@
-import { qfRawUserApi } from "./_qfOAuth.js";
-import dotenv from "dotenv";
+// server/qfUserCollections.js
+// Collection helpers only. Do not put public route handlers here.
 
-dotenv.config({ path: ".env.local" });
-dotenv.config({ path: ".env" });
+import { qfRawUserApi } from "./qfOAuth.js";
 
 export const LEARNED_COLLECTION_NAME = "Nabzi Sakinah — Learned Surahs";
 
 function unwrapArray(payload) {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
-  if (Array.isArray(payload?.data?.collections))
+  if (Array.isArray(payload?.data?.collections)) {
     return payload.data.collections;
+  }
   if (Array.isArray(payload?.collections)) return payload.collections;
   if (Array.isArray(payload?.nodes)) return payload.nodes;
+
   return [];
 }
 
@@ -24,6 +25,7 @@ function getItemArray(payload) {
   if (Array.isArray(payload?.items)) return payload.items;
   if (Array.isArray(payload?.bookmarks)) return payload.bookmarks;
   if (Array.isArray(payload?.nodes)) return payload.nodes;
+
   return [];
 }
 
@@ -49,7 +51,7 @@ export function extractSurahNumbersFromItems(items) {
 }
 
 export async function getAllCollections(req, res) {
-  const result = await qfRawUserApi(req, res, "/auth/v1/collections?first=50");
+  const result = await qfRawUserApi(req, res, "/auth/v1/collections?first=20");
 
   if (result.status >= 400) return result;
 
@@ -72,6 +74,7 @@ export async function findCollectionByName(
   if (collectionsResult.status >= 400) return null;
 
   const collections = collectionsResult.json.normalizedCollections || [];
+
   return (
     collections.find(
       (collection) =>
@@ -110,7 +113,9 @@ export async function getLearnedCollectionItems(req, res, collectionId) {
   const result = await qfRawUserApi(
     req,
     res,
-    `/auth/v1/collections/${encodeURIComponent(collectionId)}?type=surah&sortBy=recentlyAdded&first=114`,
+    `/auth/v1/collections/${encodeURIComponent(
+      collectionId,
+    )}?type=surah&sortBy=recentlyAdded&first=20`,
   );
 
   if (result.status >= 400) return result;

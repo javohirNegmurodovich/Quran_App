@@ -112,7 +112,7 @@ const SettingsButton = memo(function SettingsButton({
     >
       <span className="text-lg">🎧</span>
       <span className="hidden lg:flex flex-col items-start leading-tight">
-        <span className="text-sm">Ovoz / Tafsir</span>
+        <span className="text-sm"> Audio/Tafsir</span>
         <span className="text-[10px] font-medium text-[#0f3b25]/60 max-w-40 truncate">
           {reciterLabel}
         </span>

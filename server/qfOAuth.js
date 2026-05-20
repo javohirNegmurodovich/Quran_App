@@ -1,5 +1,7 @@
-import crypto from "node:crypto";
+// server/qfOAuth.js
+// Quran.com OAuth and User API helpers.
 
+import crypto from "node:crypto";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
@@ -29,12 +31,6 @@ export function getRedirectUri() {
   );
 }
 
-export function getPostLogoutRedirectUri() {
-  return (
-    process.env.QF_POST_LOGOUT_REDIRECT_URI || `${getAppUrl()}/quran-logout`
-  );
-}
-
 export function getQfAuthBaseUrl() {
   if (process.env.QF_OAUTH_BASE_URL) return process.env.QF_OAUTH_BASE_URL;
 
@@ -57,14 +53,6 @@ export function getClientId() {
 
 export function getClientSecret() {
   return process.env.QF_CLIENT_SECRET || process.env.CLIENT_SECRET || "";
-}
-
-export function getScopes() {
-  return (
-    process.env.QF_USER_SCOPES ||
-    process.env.SCOPES ||
-    "openid offline_access user bookmark collection reading_session activity_day streak goal preference"
-  );
 }
 
 export function base64Url(buffer) {
@@ -207,7 +195,7 @@ async function tokenRequest(body) {
 
   let json;
   try {
-    json = JSON.parse(text);
+    json = JSON.parse(text || "{}");
   } catch {
     throw new Error(`Token endpoint returned non-JSON: ${text.slice(0, 200)}`);
   }
@@ -272,6 +260,7 @@ export async function qfRawUserApi(req, res, path, options = {}) {
   }
 
   const clientId = getClientId();
+
   const response = await fetch(`${getQfApiBaseUrl()}${path}`, {
     method: options.method || "GET",
     headers: {
@@ -313,5 +302,145 @@ export async function qfUserApi(req, res, path, options = {}) {
     }
   });
 
+  if (result.status >= 400 && options.softFail) {
+    return res.status(200).json({
+      success: true,
+      softFailed: true,
+      data: options.fallbackData ?? null,
+      originalStatus: result.status,
+      originalError: result.json,
+    });
+  }
+
   return res.status(result.status).json(result.json);
+}
+
+function redirectWithResult(res, params) {
+  const url = new URL("/", getAppUrl());
+  Object.entries(params).forEach(([key, value]) =>
+    url.searchParams.set(key, value),
+  );
+
+  return res.redirect(302, url.toString());
+}
+
+export async function handleCallback(req, res) {
+  const { code, state, error, error_description } = req.query;
+
+  if (error) {
+    clearQfCookies(res);
+    return redirectWithResult(res, { qf_error: error_description || error });
+  }
+
+  const cookies = parseCookies(req);
+
+  if (!state || state !== cookies.qf_oauth_state) {
+    clearQfCookies(res);
+    return redirectWithResult(res, {
+      qf_error: "Invalid OAuth state. Please connect again.",
+    });
+  }
+
+  if (!code || !cookies.qf_code_verifier) {
+    clearQfCookies(res);
+    return redirectWithResult(res, {
+      qf_error: "Missing OAuth code or PKCE verifier.",
+    });
+  }
+
+  try {
+    const tokenData = await exchangeCodeForTokens({
+      code,
+      codeVerifier: cookies.qf_code_verifier,
+    });
+
+    setTokenCookies(res, tokenData);
+
+    appendSetCookie(res, serializeCookie("qf_oauth_state", "", { maxAge: 0 }));
+    appendSetCookie(res, serializeCookie("qf_oauth_nonce", "", { maxAge: 0 }));
+    appendSetCookie(
+      res,
+      serializeCookie("qf_code_verifier", "", { maxAge: 0 }),
+    );
+
+    return redirectWithResult(res, { qf_connected: "1" });
+  } catch (err) {
+    clearQfCookies(res);
+    return redirectWithResult(res, {
+      qf_error: err.message || "Quran.com connection failed.",
+    });
+  }
+}
+
+export async function handleLogin(req, res) {
+  const clientId = getClientId();
+
+  if (!clientId) {
+    return res.status(500).json({
+      success: false,
+      message: "Missing QF_CLIENT_ID.",
+    });
+  }
+
+  const state = randomString(24);
+  const nonce = randomString(24);
+  const codeVerifier = randomString(64);
+  const codeChallenge = createCodeChallenge(codeVerifier);
+
+  appendSetCookie(
+    res,
+    serializeCookie("qf_oauth_state", state, { maxAge: 10 * 60 }),
+  );
+  appendSetCookie(
+    res,
+    serializeCookie("qf_oauth_nonce", nonce, { maxAge: 10 * 60 }),
+  );
+  appendSetCookie(
+    res,
+    serializeCookie("qf_code_verifier", codeVerifier, { maxAge: 10 * 60 }),
+  );
+
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: clientId,
+    redirect_uri: getRedirectUri(),
+    scope: getUserScopes(),
+    state,
+    nonce,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
+  });
+
+  return res.redirect(
+    302,
+    `${getQfAuthBaseUrl()}/oauth2/auth?${params.toString()}`,
+  );
+}
+
+export function handleLogout(req, res) {
+  clearQfCookies(res);
+
+  return res.status(200).json({
+    connected: false,
+    success: true,
+  });
+}
+
+export async function handleStatus(req, res) {
+  try {
+    const cookies = parseCookies(req);
+    const accessToken = await getValidUserAccessToken(req, res);
+
+    return res.status(200).json({
+      connected: Boolean(accessToken),
+      hasAccessCookie: Boolean(cookies.qf_access_token),
+      hasRefreshCookie: Boolean(cookies.qf_refresh_token),
+      expiresAt: cookies.qf_expires_at || null,
+    });
+  } catch (error) {
+    return res.status(200).json({
+      connected: false,
+      message: error.message,
+    });
+  }
 }
