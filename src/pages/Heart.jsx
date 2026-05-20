@@ -303,7 +303,7 @@ function Heart() {
           gl={GL_OPTIONS}
           camera={camera}
           // "demand" → only re-renders when something changes; saves GPU on idle
-          frameloop="demand"
+          // frameloop="demand"
         >
           <ambientLight intensity={1.25} />
           <directionalLight
