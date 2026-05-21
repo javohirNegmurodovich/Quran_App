@@ -354,9 +354,9 @@ const AyahCard = memo(
                   View tafsir — {ayah.tafsir?.resourceName || tafsirLabel}{" "}
                   {ayah.tafsir?.languageName || ""}
                 </summary>
-                <p className="mt-4 text-base text-gray-700 leading-relaxed">
+                <div className="mt-4 text-base text-gray-700 leading-relaxed">
                   <SafeTafsirHtml html={ayah.tafsir.text} />
-                </p>
+                </div>
               </details>
             )}
           </div>

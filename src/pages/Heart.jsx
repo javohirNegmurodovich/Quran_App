@@ -363,7 +363,7 @@ function Heart() {
           </p>
         </div>
         <p className="text-[8px] uppercase tracking-[0.3em] text-white/30 mt-1 font-mono">
-          Versiya 1.0
+          Version 1.0
         </p>
       </div>
     </div>

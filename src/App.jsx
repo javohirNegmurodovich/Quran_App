@@ -11,6 +11,11 @@ import AppearanceModal from "./components/Appearance";
 import QuranOAuthFeedback from "./components/QuranOAuthFeedback";
 import { useStore, useSettingsStore } from "./zustand/store";
 export default function App() {
+  const loadQuranSession = useStore((state) => state.loadQuranSession);
+
+  useEffect(() => {
+    loadQuranSession({ silent: false });
+  }, [loadQuranSession]);
   return (
     <>
       <Toaster
@@ -36,7 +41,6 @@ export default function App() {
       <Analytics />
       <AppearanceModal />
       <AboutModal />
-      {/* <SupportModal isOpen={isSupportModalOpen} onClose={closeSupportModal} /> */}
     </>
   );
 }
